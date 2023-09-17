@@ -1,112 +1,32 @@
-ll.registerPlugin('AClans', 'Plugin for LLBDS that adds clans.', [ 1, 0, 0 ],{
+ll.registerPlugin('AClans', 'Plugin for LLBDS that adds clans.', [ 1, 0, 0 ], {
     Author: "Alpha",
-})
-const DB = require('./methods/db')
-const Logger = require('./methods/Log')
+});
+const fs = require('fs')
+const DB = require('./methods/DB');
+const Logger = require('./methods/Log');
+const { getConfig } = require('./methods/ConfigFile');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder ,ButtonBuilder, ButtonStyle } = require("discord.js");
 
-const config_file = new DB('./plugins/AClans/config.json')
-if(!config_file.get('config')){
-    Logger.warn(`Конфигурационный файл не найден, создаю!`)
-    config_file.init('config', {
-        lang: 'ru.json',
+const config = getConfig('./plugins/AClans/config.json');
+const client = new Client({ intents: [ Object.keys(GatewayIntentBits) ] });
+client.login(config.discordToken);
 
-        discordToken: '',
-        discordPrefix: '',
-
-        enableLeaderboard: true,
-        enableWebLeaderboard: false,
-
-        enableUnMiNeDIntegration: true,
-
-        disableClanPVPByDefault: false,
-
-        enableHeadChat: true,
-        enableLocalChat: false,
-        enableClanChatByDefault: true,
-
-        enableRating: true,
-
-        enableIssuingAssigment: true,
-
-        clansMinecraftColors: [
-            "§0", // black
-            "§4", // dark_red
-            "§c", // red
-            "§6", // gold
-            "§e", // yellow
-            "§2", // dark_green
-            "§a", // green
-            "§b", // aqua
-            "§3", // dark_aqua
-            "§9", // blue
-            "§1", // dark_blue
-            "§5", // dark_purple
-            "§d", // light_purple
-            "§8", // dark_gray
-            "§7", // gray
-            "§f"  // white
-        ],
-        clansDiscordEmojiColors: [
-            "<:black:1073958622180167721>",
-            "<:dark_red:1073958635635494983>",
-            "<:red:1073958614416498698>",
-            "<:gold:1073958708045946930>",
-            "<:yellow:1073958619332214845>",
-            "<:dark_green:1073958685820342362>",
-            "<:green:1073958610016669706>",
-            "<:aqua:1073958620737314898>",
-            "<:dark_aqua:1073958626173145088>",
-            "<:blue:1073958624604471407>",
-            "<:dark_blue:1073958628589064212>",
-            "<:dark_purple:1073958634024869919>",
-            "<:light_purple:1073958611555987506>",
-            "<:dark_gray:1073958630270967878>",
-            "<:gray:1073958607462342686>",
-            "<:white:1073958616463323249>"
-        ],
-        clansDiscordRoleColors: [
-            "#000000",  // black
-            "#AA0000",  // dark_red
-            "#FF5555",  // red
-            "#FFAA00",  // gold
-            "#FFFF55",  // yellow
-            "#00AA00",  // dark_green
-            "#55FF55",  // green
-            "#55FFFF",  // aqua
-            "#00AAAA",  // dark_aqua
-            "#5555FF",  // blue
-            "#0000AA",  // dark_blue
-            "#AA00AA",  // dark_purple
-            "#FF55FF",  // light_purple
-            "#555555",  // dark_gray
-            "#AAAAAA",  // gray
-            "#FFFFFF"   // white
-        ],
-        clansUnicodeIconsList: [
-            "\uE100", 
-            "\uE101", 
-            "\uE102", 
-            "\uE103", 
-            "\uE104", 
-            "\uE105", 
-            "\uE106", 
-            "\uE107", 
-            "\uE108", 
-            "\uE109", 
-            "\uE10A", 
-            "\uE10B", 
-            "\uE10C", 
-            "\uE10D", 
-            "\uE10E", 
-            "\uE10F",
-        ],
-
-        enableUniCoinRewards: true,
-        uniCoinReward: [ 1, 5 ]
-    })
-    Logger.warn(`Конфигурационный файл создан и находится в \x1b[1m\x1b[32m"./plugins/AClans/config.json"\x1b[0m!`)
+const events = fs.readdirSync('./events').filter(file => file.endsWith('.js'))
+for (const file of events){
+    const event = require('./events/'+file)
+    client.on(event.name, (...args) => event.execute(...args, client))
 }
-const config = config_file.get('config')
 
-Logger.log(JSON.stringify(config))
-  
+const cmds = require("./cmds.js")
+client.on('messageCreate', (msg) => {
+    if (msg.author.username != client.user.username && msg.author.discriminator != client.user.discriminator) {
+        const discordCmd = msg.content.trim() + " "
+        const discordCmdName = discordCmd.slice(0, discordCmd.indexOf(" "));
+        for (i in cmds) {
+            const cmdsListName = config.discordPrefix + cmds[i].name;
+            if (discordCmdName == cmdsListName) {
+                cmds[i].out(client, msg);
+            }
+        }
+    }
+})
