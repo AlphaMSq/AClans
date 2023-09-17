@@ -1,7 +1,8 @@
 ll.registerPlugin('AClans', 'Plugin for LLBDS that adds clans.', [ 1, 0, 0 ], {
     Author: "Alpha",
 });
-const fs = require('fs')
+const fs = require('fs');
+const path = require('path');
 const DB = require('./methods/DB');
 const Logger = require('./methods/Log');
 const { getConfig } = require('./methods/ConfigFile');
@@ -11,10 +12,11 @@ const config = getConfig('./plugins/AClans/config.json');
 const client = new Client({ intents: [ Object.keys(GatewayIntentBits) ] });
 client.login(config.discordToken);
 
-const events = fs.readdirSync('./events').filter(file => file.endsWith('.js'))
+const eventsFolderPath = path.join(__dirname, 'events');
+const events = fs.readdirSync(eventsFolderPath).filter(file => file.endsWith('.js'));
 for (const file of events){
-    const event = require('./events/'+file)
-    client.on(event.name, (...args) => event.execute(...args, client))
+    const event = require(path.join(eventsFolderPath, file));
+    client.on(event.name, (...args) => event.execute(...args, client));
 }
 
 const cmds = require("./cmds.js")
