@@ -19,10 +19,17 @@ for (const file of events){
     client.on(event.name, (...args) => event.execute(...args, client));
 }
 
-const cmds = require("./cmds.js")
+const MCeventsFolderPath = path.join(__dirname, 'mc_events');
+const MCevents = fs.readdirSync(MCeventsFolderPath).filter(file => file.endsWith('.js'));
+for (const file of MCevents){
+    const event = require(path.join(MCeventsFolderPath, file));
+    mc.listen(event.name, (...args) => event.execute(...args, client));
+}
+
+const cmds = require("./cmds.js");
 client.on('messageCreate', (msg) => {
     if (msg.author.username != client.user.username && msg.author.discriminator != client.user.discriminator) {
-        const discordCmd = msg.content.trim() + " "
+        const discordCmd = msg.content.trim() + " ";
         const discordCmdName = discordCmd.slice(0, discordCmd.indexOf(" "));
         for (i in cmds) {
             const cmdsListName = config.discordPrefix + cmds[i].name;
@@ -31,4 +38,4 @@ client.on('messageCreate', (msg) => {
             }
         }
     }
-})
+});

@@ -18,6 +18,8 @@ function getConfig(directory) {
     
             discordToken: '',
             discordPrefix: '*',
+
+            mainClanChannel: '',
     
             enableLeaderboard: true,
             enableWebLeaderboard: false,
@@ -118,7 +120,9 @@ function getConfig(directory) {
     // Возврат компонента 'config' из файла конфигурации.
     const config = config_file.get('config');
     if(config.debugMode){
-        config.discordToken = require('../debugConf.json').debugToken
+        const debug = require('../debugConf.json');
+        config.discordToken = debug.debugToken;
+        config.mainClanChannel =  debug.mainClanChannel;
     }
     return config;
 }
