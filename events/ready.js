@@ -4,11 +4,23 @@ module.exports = {
     async execute(client){
         const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
         const config = client.config;
-        const channel = client.channels.cache.get(config.mainClanChannel);
+        const clansChanel = client.channels.cache.get(config.mainClanChannel);
 
-        const clearOldMessages = async (statusChannel, nbr) => {
+        if (!clansChanel) {
+            console.log(`Ошибка: неверный идентификатор канала!`);
+            return;
+        }
+        setTimeout(async () => {
+            const clansMessage = await createClanMessage(clansChanel);
+            if (!clansMessage) {
+                console.log("Ошибка: невозможно отправить сообщение со статусом!");
+                return;
+            }
+        }, 1000);
+
+        const clearOldMessages = async (channel, nbr) => {
             try {
-                const messages = await statusChannel.messages.fetch({ limit: 99 });
+                const messages = await channel.messages.fetch({ limit: 99 });
                 let i = 0;
                 for (const message of messages.values()) {
                     if (i >= nbr) {
@@ -17,52 +29,52 @@ module.exports = {
                     i += 1;
                 }
             } catch (error) {
-                console.error("error while deleting old status messages:\n", error.message);
+                console.error(`Произошла ошибка при очистке старых сообщений!\n${ error.message }`);
             }
         }
         
-        const getLastMessage = async (statusChannel) => {
+        const getLastMessage = async (channel) => {
             try {
-                const messages = await statusChannel.messages.fetch({ limit: 20 });
+                const messages = await channel.messages.fetch({ limit: 20 });
                 const filteredMessages = messages.filter((message) => {
                     return true;
                 });
                 return filteredMessages.first();
             } catch (e) {
-                console.error("error while getting last status message (does not exist):\n", error.message);
+                console.error(`Произошла ошибка при получении последнего сообщения (его нету)!\n${ error.message }`);
                 return null;
             }
         }
 
-        const sendmsg = async () => {
+        const createClanMessage = async (channel) => {
             await clearOldMessages(channel, 1);
         
-            const statusMessage = await getLastMessage(channel);
-            if (statusMessage) {
-                return statusMessage;
+            const clanButtonMessage = await getLastMessage(channel);
+            if (clanButtonMessage) {
+                return clanButtonMessage;
             }
         
             await clearOldMessages(channel, 0);
         
             const embed = new EmbedBuilder()
-            .setColor(conf.embedCollor)
+            .setColor(config.embedCollor)
             .setAuthor({
-                name: 'Купить Проходку'
+                name: 'Bandomas Кланы'
             })
-            .setDescription(`**Для покупки проходки тык на кнопку ниже!**\n**Проходка стоит ${"`500`"} рублей!**`)
-            .setThumbnail(conf.thumbImage)
+            .setDescription(`**Для создания клана нажми на кнопку ниже!**`)
+            .setThumbnail(config.thumbImage)
             .setFooter({
-                text: conf.footerText
+                text: config.footerText
             })
             const row = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
                 .setCustomId('requestEmbed')
-                .setLabel('Дать Денег')
+                .setLabel('Создать Клан')
                 .setEmoji('💚')
                 .setStyle(ButtonStyle.Primary)
             )
-            channel.send({
+            return channel.send({
                 embeds: [embed],
                 components: [row]
             })

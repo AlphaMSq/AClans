@@ -1,6 +1,6 @@
-ll.registerPlugin('AClans', 'Plugin for LLBDS that adds clans.', [ 1, 0, 0 ], {
-    Author: "Alpha",
-});
+//ll.registerPlugin('AClans', 'Plugin for LLBDS that adds clans.', [ 1, 0, 0 ], {
+    //Author: "Alpha",
+//});
 const fs = require('fs');
 const path = require('path');
 const DB = require('./methods/DB');
@@ -9,20 +9,20 @@ const { getConfig } = require('./methods/ConfigFile');
 const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder ,ButtonBuilder, ButtonStyle } = require("discord.js");
 
 const config = getConfig('./plugins/AClans/config.json');
-const client = new Client({ intents: [ Object.keys(GatewayIntentBits) ] });
+const client = new Client({ intents: [ Object.keys(GatewayIntentBits) ] }); client.config = config;
 client.login(config.discordToken);
 
 const eventsFolderPath = path.join(__dirname, 'events');
 const events = fs.readdirSync(eventsFolderPath).filter(file => file.endsWith('.js'));
 for (const file of events){
-    const event = require(path.join(eventsFolderPath, file));
+    const event = require(`./events/${ file }`);
     client.on(event.name, (...args) => event.execute(...args, client));
 }
 
 const MCeventsFolderPath = path.join(__dirname, 'mc_events');
 const MCevents = fs.readdirSync(MCeventsFolderPath).filter(file => file.endsWith('.js'));
 for (const file of MCevents){
-    const event = require(path.join(MCeventsFolderPath, file));
+    const event = require(`./mc_events/${ file }`);
     mc.listen(event.name, (...args) => event.execute(...args, client));
 }
 

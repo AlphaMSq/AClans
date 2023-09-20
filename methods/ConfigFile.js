@@ -18,8 +18,10 @@ function getConfig(directory) {
     
             discordToken: '',
             discordPrefix: '*',
-
             mainClanChannel: '',
+            embedCollor: '#ff6a00',
+            thumbnailImage: 'https://images-ext-2.discordapp.net/external/Y0Sb3cCmyPxlxwxE8e8guHnYgvVCp9pHTTc2K41Ly9Y/https/i.imgur.com/ngZFpUl.png',
+            footerText: 'Bandomas.pro | 19132',
     
             enableLeaderboard: true,
             enableWebLeaderboard: false,
@@ -112,7 +114,7 @@ function getConfig(directory) {
             enableUniCoinRewards: true,
             uniCoinReward: [ 1, 5 ],
     
-            debugMode: false
+            debugMode: true
         });
         Logger.warn(`Конфигурационный файл создан и находится в \x1b[1m\x1b[32m"${directory}"\x1b[0m!`);
     }
@@ -122,7 +124,7 @@ function getConfig(directory) {
     if(config.debugMode){
         const debug = require('../debugConf.json');
         config.discordToken = debug.debugToken;
-        config.mainClanChannel =  debug.mainClanChannel;
+        config.mainClanChannel = debug.mainClanChannel;
     }
     return config;
 }
